@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Studio: POD & Microstock Generator</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome untuk Ikon Profesional -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            obsidian: '#0B0D13',
+            cardDark: '#121620',
+            borderDark: '#1F2636',
+            goldPrimary: '#D4AF37',
+            goldLight: '#F3E5AB',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #0B0D13;
+      color: #F3F4F6;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(243, 229, 171, 0.04) 0%, transparent 40%);
+      min-height: 100vh;
+    }
+
+    /* Gradasi Emas Mewah */
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-gradient-bg {
+      background: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #B8860B 100%);
+      color: #0B0D13;
+    }
+
+    .gold-gradient-bg:hover {
+      background: linear-gradient(135deg, #E2BE48 0%, #FFF2BE 50%, #C9971A 100%);
+    }
+
+    .gold-border-glow:focus-within {
+      border-color: #D4AF37;
+      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0D13;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F2636;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D4AF37;
+    }
+
+    /* Loader Shimmer */
+    @keyframes pulseGold {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    .animate-gold-pulse {
+      animation: pulseGold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-goldPrimary selection:text-obsidian">
+
+  <!-- Toast Notification Container (Pengganti alert) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Navbar / Header -->
+  <header class="border-b border-borderDark/80 bg-obsidian/90 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl gold-gradient-bg flex items-center justify-center shadow-lg shadow-goldPrimary/20">
+          <i class="fa-solid fa-wand-magic-sparkles text-lg text-obsidian"></i>
+        </div>
+        <div>
+          <h1 class="font-display font-extrabold text-xl sm:text-2xl tracking-tight gold-gradient-text">
+            AI Studio: POD & Microstock Generator
+          </h1>
+          <p class="text-xs text-gray-400">Generator Desain Kaos, Stiker & Aset Komersial Siap Jual</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="toggleGuideModal()" class="text-xs sm:text-sm px-3.5 py-2 rounded-xl bg-cardDark border border-borderDark hover:border-goldPrimary/60 text-gray-300 hover:text-goldLight transition flex items-center gap-2">
+          <i class="fa-solid fa-circle-question text-goldPrimary"></i>
+          <span>Cara Dapat API Key Gratis</span>
+        </button>
+        <span class="hidden md:inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          GitHub Pages Ready
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+    <!-- Panel Pengaturan API Key -->
+    <section class="bg-cardDark border border-borderDark rounded-2xl p-4 sm:p-5 shadow-xl">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-goldPrimary/10 border border-goldPrimary/30 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+            <i class="fa-solid fa-key text-goldPrimary text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+              Google Gemini API Key
+              <span id="apiStatusBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Belum Diisi</span>
+            </h2>
+            <p class="text-xs text-gray-400 mt-0.5">Kunci API disimpan aman hanya di browser laptop Anda (LocalStorage) dan tidak dikirim ke server lain.</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+          <div class="relative flex-1 sm:w-80 gold-border-glow rounded-xl border border-borderDark bg-obsidian transition">
+            <input 
+              type="password" 
+              id="apiKeyInput" 
+              placeholder="Tempel AIzaSy... API Key Anda di sini" 
+              class="w-full bg-transparent px-3.5 py-2.5 pr-10 text-sm text-white placeholder-gray-500 focus:outline-none rounded-xl"
+            >
+            <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-goldLight p-1" title="Tampilkan/Sembunyikan">
+              <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+          <button onclick="saveApiKey()" class="px-4 py-2.5 rounded-xl bg-goldPrimary/20 hover:bg-goldPrimary/30 text-goldLight border border-goldPrimary/40 text-sm font-medium transition flex items-center justify-center gap-2 shrink-0">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Simpan Key</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grid Utama: Kontrol Kiri & Hasil Kanan -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- KOLOM KIRI: Pengaturan Kategori & Prompt (5 Kolom di Desktop) -->
+      <div class="lg:col-span-5 space-y-5">
+
+        <!-- Tab Selector Utama -->
+        <div class="bg-cardDark border border-borderDark p-1.5 rounded-2xl grid grid-cols-2 gap-1.5 shadow-lg">
+          <button 
+            id="tabBtnPod" 
+            onclick="switchTab('pod')" 
+            class="py-3 px-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 gold-gradient-bg shadow-md"
+          >
+            <i class="fa-solid fa-shirt"></i>
+            <span>Print on Demand</span>
+          </button>
+          <button 
+            id="tabBtnMicrostock" 
+            onclick="switchTab('microstock')" 
+            class="py-3 px-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center justify-center gap-2"
+          >
+            <i class="fa-solid fa-images"></i>
+            <span>Microstock Asset</span>
+          </button>
+        </div>
+
+        <!-- Panel Kontrol Spesifik Tab -->
+        <div class="bg-cardDark border border-borderDark rounded-2xl p-5 space-y-5 shadow-xl">
+
+          <!-- KONTEN TAB 1: PRINT ON DEMAND (POD) -->
+          <div id="panelPod" class="space-y-4">
+            <div class="flex items-center justify-between border-b border-borderDark pb-3">
+              <span class="text-xs font-semibold uppercase tracking-wider text-goldPrimary">Pengaturan Desain POD</span>
+              <span class="text-[11px] text-gray-400">Redbubble • TeePublic • Ciptaloka</span>
+            </div>
+
+            <!-- Gaya Desain POD -->
+            <div>
+              <label class="block text-xs font-medium text-gray-300 mb-1.5">Gaya Desain POD</label>
+              <select id="podStyle" class="w-full bg-obsidian border border-borderDark focus:border-goldPrimary rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                <option value="Vector T-Shirt Design">Vector T-Shirt Design (Sablon Kaos Bersih)</option>
+                <option value="Cute Sticker (Die-Cut White Border)">Cute Sticker (Die-Cut White Border)</option>
+                <option value="Vintage Retro Badge">Vintage Retro Badge (Gaya Retro Klasik)</option>
+                <option value="Minimalist Line Art">Minimalist Line Art (Garis Minimalis)</option>
+                <option value="Cyberpunk Illustration">Cyberpunk Illustration (Neon Futuristik)</option>
+                <option value="Typography + Illustration">Typography + Illustration (Teks & Gambar)</option>
+              </select>
+            </div>
+
+            <!-- Background Otomatis -->
+            <div>
+              <label class="block text-xs font-medium text-gray-300 mb-1.5">Background Otomatis (Mudah Di-remove)</label>
+              <select id="podBackground" class="w-full bg-obsidian border border-borderDark focus:border-goldPrimary rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                <option value="Isolated on Solid White Background">Isolated on Solid White Background (Latar Putih Polos)</option>
+                <option value="Isolated on Solid Black Background">Isolated on Solid Black Background (Latar Hitam Pekat)</option>
+              </select>
+            </div>
+
+            <!-- Rasio Aspek POD -->
+            <div>
+              <label class="block text-xs font-medium text-gray-300 mb-1.5">Rasio Aspek Produk</label>
+              <div class="grid grid-cols-2 gap-2.5" id="podAspectGroup">
+                <button type="button" data-ratio="1:1" onclick="selectRatio('pod', '1:1', this)" class="ratio-btn active-ratio py-2.5 px-3 rounded-xl border border-goldPrimary bg-goldPrimary/15 text-goldLight text-xs font-semibold flex items-center justify-center gap-2 transition">
+                  <i class="fa-regular fa-square"></i> 1:1 (Kaos / Stiker)
+                </button>
+                <button type="button" data-ratio="3:4" onclick="selectRatio('pod', '3:4', this)" class="ratio-btn py-2.5 px-3 rounded-xl border border-borderDark bg-obsidian text-gray-400 hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition">
+                  <i class="fa-solid fa-file-image"></i> 3:4 (Poster / Hoodie)
+                </button>
+              </div>
+            </div>
+
+            <!-- Tombol Sempurnakan Prompt POD -->
+            <button type="button" onclick="enhancePromptRuleBased('pod')" class="w-full py-2.5 px-4 rounded-xl bg-obsidian hover:bg-goldPrimary/10 border border-goldPrimary/40 text-goldLight text-xs font-semibold transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-sparkles text-goldPrimary"></i>
+              <span>Sempurnakan Prompt POD</span>
+            </button>
+          </div>
+
+          <!-- KONTEN TAB 2: MICROSTOCK ASSET -->
+          <div id="panelMicrostock" class="space-y-4 hidden">
+            <div class="flex items-center justify-between border-b border-borderDark pb-3">
+              <span class="text-xs font-semibold uppercase tracking-wider text-goldPrimary">Pengaturan Aset Microstock</span>
+              <span class="text-[11px] text-gray-400">Shutterstock • Adobe Stock • Freepik</span>
+            </div>
+
+            <!-- Kategori Microstock -->
+            <div>
+              <label class="block text-xs font-medium text-gray-300 mb-1.5">Kategori Aset Microstock</label>
+              <select id="microstockCategory" class="w-full bg-obsidian border border-borderDark focus:border-goldPrimary rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                <option value="Commercial Photography">Commercial Photography (Foto Stok Realistis)</option>
+                <option value="3D Icon & Render">3D Icon & Render (Objek 3D Halus)</option>
+                <option value="Seamless Pattern">Seamless Pattern (Pola Berulang Tekstil/Wallpaper)</option>
+                <option value="Abstract Background / Wallpaper">Abstract Background / Wallpaper</option>
+                <option value="Flat Vector Illustration">Flat Vector Illustration (Ilustrasi Vektor Datar)</option>
+                <option value="Isometric Business/Tech">Isometric Business/Tech (Isometrik Teknologi)</option>
+              </select>
+            </div>
+
+            <!-- Rasio Aspek Microstock -->
+            <div>
+              <label class="block text-xs font-medium text-gray-300 mb-1.5">Rasio Aspek Standar</label>
+              <div class="grid grid-cols-2 gap-2" id="microstockAspectGroup">
+                <button type="button" data-ratio="16:9" onclick="selectRatio('microstock', '16:9', this)" class="ratio-btn active-ratio py-2 px-3 rounded-xl border border-goldPrimary bg-goldPrimary/15 text-goldLight text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                  <i class="fa-solid fa-panorama"></i> 16:9 (Landscape)
+                </button>
+                <button type="button" data-ratio="4:3" onclick="selectRatio('microstock', '4:3', this)" class="ratio-btn py-2 px-3 rounded-xl border border-borderDark bg-obsidian text-gray-400 hover:text-white text-xs font-medium flex items-center justify-center gap-1.5 transition">
+                  <i class="fa-regular fa-image"></i> 4:3 (Foto Klasik)
+                </button>
+                <button type="button" data-ratio="1:1" onclick="selectRatio('microstock', '1:1', this)" class="ratio-btn py-2 px-3 rounded-xl border border-borderDark bg-obsidian text-gray-400 hover:text-white text-xs font-medium flex items-center justify-center gap-1.5 transition">
+                  <i class="fa-regular fa-square"></i> 1:1 (Square / Pattern)
+                </button>
+                <button type="button" data-ratio="9:16" onclick="selectRatio('microstock', '9:16', this)" class="ratio-btn py-2 px-3 rounded-xl border border-borderDark bg-obsidian text-gray-400 hover:text-white text-xs font-medium flex items-center justify-center gap-1.5 transition">
+                  <i class="fa-solid fa-mobile-screen"></i> 9:16 (Vertical)
+                </button>
+              </div>
+            </div>
+
+            <!-- Tombol Sempurnakan Prompt Microstock -->
+            <button type="button" onclick="enhancePromptRuleBased('microstock')" class="w-full py-2.5 px-4 rounded-xl bg-obsidian hover:bg-goldPrimary/10 border border-goldPrimary/40 text-goldLight text-xs font-semibold transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-sparkles text-goldPrimary"></i>
+              <span>Sempurnakan Prompt Microstock</span>
+            </button>
+          </div>
+
+          <!-- AREA INPUT PROMPT UTAMA -->
+          <div class="pt-2 border-t border-borderDark space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="promptInput" class="text-xs font-semibold text-gray-200">
+                Deskripsi Ide Gambar (Bahasa Indonesia / Inggris)
+              </label>
+              <button type="button" onclick="insertSamplePrompt()" class="text-[11px] text-goldPrimary hover:text-goldLight underline">
+                Contoh Ide
+              </button>
+            </div>
+
+            <div class="gold-border-glow rounded-xl border border-borderDark bg-obsidian transition">
+              <textarea 
+                id="promptInput" 
+                rows="4" 
+                placeholder="Contoh: Kucing astronot lucu sedang minum kopi di bulan sambil melambaikan tangan..." 
+                class="w-full bg-transparent p-3.5 text-sm text-white placeholder-gray-500 focus:outline-none rounded-xl resize-none"
+              ></textarea>
+            </div>
+
+            <!-- Opsi AI Auto-Translate & Optimize -->
+            <label class="flex items-start gap-2.5 cursor-pointer select-none bg-obsidian/60 p-3 rounded-xl border border-borderDark/80 hover:border-borderDark">
+              <input type="checkbox" id="autoTranslateCheck" checked class="mt-0.5 accent-goldPrimary w-4 h-4 rounded cursor-pointer">
+              <div class="text-xs">
+                <span class="text-gray-200 font-medium block">Terjemahkan & Optimasi Prompt Otomatis (AI)</span>
+                <span class="text-gray-400 text-[11px]">Gemini otomatis menerjemahkan ide Indonesia ke prompt Inggris detail sesuai standar komersial sebelum membuat gambar.</span>
+              </div>
+            </label>
+
+            <!-- Tombol Generate Utama -->
+            <button 
+              id="generateBtn" 
+              onclick="handleGenerate()" 
+              class="w-full py-3.5 px-5 rounded-xl gold-gradient-bg font-display font-bold text-sm sm:text-base shadow-lg shadow-goldPrimary/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2.5"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Generate Gambar Sekarang</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- KOLOM KANAN: Preview Gambar, Metadata SEO & Galeri Riwayat (7 Kolom di Desktop) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Preview Canvas Utama -->
+        <div class="bg-cardDark border border-borderDark rounded-2xl p-5 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-borderDark">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-image text-goldPrimary"></i>
+              <h3 class="font-display font-bold text-base text-white">Hasil Studio AI</h3>
+              <span id="activeRatioTag" class="text-[11px] px-2.5 py-0.5 rounded-full bg-obsidian border border-borderDark text-gray-300">1:1</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button 
+                id="downloadBtn" 
+                onclick="downloadCurrentImage()" 
+                disabled 
+                class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed text-white text-xs font-semibold transition flex items-center gap-2 shadow-md"
+              >
+                <i class="fa-solid fa-download"></i>
+                <span>Download PNG</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Area Tampilan Gambar / Empty State / Loading State -->
+          <div class="mt-4 relative min-h-[340px] sm:min-h-[420px] rounded-2xl bg-obsidian border border-borderDark/90 flex items-center justify-center overflow-hidden p-4">
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center max-w-md space-y-3 py-8">
+              <div class="w-16 h-16 rounded-2xl bg-cardDark border border-borderDark mx-auto flex items-center justify-center text-goldPrimary/80 text-2xl">
+                <i class="fa-solid fa-palette"></i>
+              </div>
+              <h4 class="text-base font-semibold text-gray-200">Siap Membuat Karya Komersial</h4>
+              <p class="text-xs text-gray-400 leading-relaxed">
+                Masukkan API Key Gemini Anda di bagian atas, pilih mode <strong>Print on Demand</strong> atau <strong>Microstock Asset</strong>, tulis ide desain Anda, lalu klik <strong>Generate Gambar Sekarang</strong>.
+              </p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden text-center max-w-sm space-y-4 py-10">
+              <div class="w-16 h-16 rounded-2xl gold-gradient-bg mx-auto flex items-center justify-center animate-gold-pulse shadow-xl shadow-goldPrimary/20">
+                <i class="fa-solid fa-wand-sparkles text-2xl text-obsidian"></i>
+              </div>
+              <div>
+                <h4 id="loadingStepTitle" class="text-sm font-bold text-goldLight">Meracik Prompt Profesional...</h4>
+                <p id="loadingStepDesc" class="text-xs text-gray-400 mt-1">AI sedang mengoptimalkan komposisi dan rendering gambar resolusi tinggi.</p>
+              </div>
+              <div class="w-48 h-1.5 bg-cardDark rounded-full mx-auto overflow-hidden">
+                <div class="h-full gold-gradient-bg w-2/3 animate-pulse rounded-full"></div>
+              </div>
+            </div>
+
+            <!-- Image Result -->
+            <img 
+              id="resultImage" 
+              src="" 
+              alt="Hasil Generate AI" 
+              class="hidden max-h-[520px] w-auto max-w-full rounded-xl shadow-2xl object-contain"
+            >
+          </div>
+
+          <!-- Prompt Final yang Digunakan -->
+          <div id="finalPromptBox" class="hidden mt-4 p-3 rounded-xl bg-obsidian border border-borderDark text-xs">
+            <div class="flex items-center justify-between text-gray-400 mb-1">
+              <span class="font-semibold text-goldPrimary"><i class="fa-solid fa-terminal mr-1"></i> Final Prompt (English):</span>
+              <button onclick="copyText('finalPromptText', 'Prompt berhasil disalin!')" class="hover:text-white transition">
+                <i class="fa-regular fa-copy mr-1"></i>Salin Prompt
+              </button>
+            </div>
+            <p id="finalPromptText" class="text-gray-300 leading-relaxed select-all"></p>
+          </div>
+        </div>
+
+        <!-- Panel Bonus: Auto-Metadata SEO (Judul & Keywords Microstock/POD) -->
+        <div id="seoMetadataCard" class="bg-cardDark border border-borderDark rounded-2xl p-5 shadow-xl space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-borderDark pb-3">
+            <div>
+              <h3 class="font-display font-bold text-base text-white flex items-center gap-2">
+                <i class="fa-solid fa-tags text-goldPrimary"></i>
+                <span>Auto-Metadata SEO (Judul & Keywords)</span>
+              </h3>
+              <p class="text-xs text-gray-400">Siap copy-paste untuk Shutterstock, Adobe Stock, Freepik, Redbubble & TeePublic</p>
+            </div>
+            <button 
+              id="regenSeoBtn" 
+              onclick="generateSeoMetadata()" 
+              disabled
+              class="text-xs px-3 py-1.5 rounded-xl bg-obsidian hover:bg-goldPrimary/15 disabled:opacity-40 disabled:cursor-not-allowed border border-goldPrimary/40 text-goldLight transition flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-rotate"></i>
+              <span>Buat Ulang SEO</span>
+            </button>
+          </div>
+
+          <div id="seoEmptyHint" class="text-xs text-gray-400 py-2">
+            Metadata SEO (Judul komersial Bahasa Inggris + 28 Keywords relevan) akan otomatis dibuat setelah Anda menghasilkan gambar.
+          </div>
+
+          <div id="seoLoading" class="hidden py-4 flex items-center gap-3 text-xs text-goldLight">
+            <i class="fa-solid fa-circle-notch fa-spin text-goldPrimary text-base"></i>
+            <span>Gemini sedang menyusun judul komersial & 28 keywords SEO terbaik...</span>
+          </div>
+
+          <div id="seoContent" class="hidden space-y-4">
+            <!-- Judul SEO -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold text-gray-300">Judul Komersial (Commercial Title)</label>
+                <button onclick="copyText('seoTitleText', 'Judul SEO berhasil disalin!')" class="text-xs text-goldPrimary hover:text-goldLight flex items-center gap-1">
+                  <i class="fa-regular fa-copy"></i> Salin Judul
+                </button>
+              </div>
+              <div id="seoTitleText" class="p-3 rounded-xl bg-obsidian border border-borderDark text-sm text-white font-medium select-all"></div>
+            </div>
+
+            <!-- Keywords SEO -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold text-gray-300">
+                  Keywords / Tags (<span id="keywordCount">0</span> kata kunci dipisah koma)
+                </label>
+                <button onclick="copyText('seoKeywordsText', 'Semua Keywords berhasil disalin!')" class="text-xs text-goldPrimary hover:text-goldLight flex items-center gap-1">
+                  <i class="fa-regular fa-copy"></i> Salin Semua Keywords
+                </button>
+              </div>
+              <div id="seoKeywordsText" class="p-3 rounded-xl bg-obsidian border border-borderDark text-xs text-gray-300 leading-relaxed select-all"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Galeri Riwayat Sesi Ini -->
+        <div class="bg-cardDark border border-borderDark rounded-2xl p-5 shadow-xl space-y-4">
+          <div class="flex items-center justify-between border-b border-borderDark pb-3">
+            <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-goldPrimary"></i>
+              <span>Galeri Riwayat Sesi Ini</span>
+            </h3>
+            <span id="historyCount" class="text-xs text-gray-400">0 Gambar</span>
+          </div>
+
+          <div id="historyGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="col-span-full text-center py-6 text-xs text-gray-500 border border-dashed border-borderDark rounded-xl">
+              Belum ada gambar yang dibuat pada sesi ini.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-borderDark/80 mt-12 py-6 text-center text-xs text-gray-500">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>AI Studio: POD & Microstock Generator &bull; Ditenagai oleh Google Gemini API &bull; Siap Deploy di GitHub Pages</p>
+    </div>
+  </footer>
+
+  <!-- Modal Panduan Mendapatkan API Key Gratis -->
+  <div id="guideModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-cardDark border border-goldPrimary/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 relative">
+      <button onclick="toggleGuideModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1.5">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl gold-gradient-bg flex items-center justify-center text-obsidian">
+          <i class="fa-solid fa-key text-lg"></i>
+        </div>
+        <div>
+          <h3 class="font-display font-bold text-lg text-white">Cara Mendapatkan Gemini API Key Gratis</h3>
+          <p class="text-xs text-gray-400">Hanya butuh akun Google (Gmail) & waktu 1 menit</p>
+        </div>
+      </div>
+
+      <ol class="space-y-3 text-xs sm:text-sm text-gray-300 list-decimal list-inside bg-obsidian p-4 rounded-xl border border-borderDark">
+        <li>Buka situs resmi <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-goldPrimary hover:underline font-semibold">Google AI Studio (aistudio.google.com) <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>.</li>
+        <li>Login menggunakan akun Google / Gmail Anda.</li>
+        <li>Klik tombol biru <strong>"Create API key"</strong> (Buat kunci API).</li>
+        <li>Pilih project yang tersedia (atau buat baru) lalu salin kode yang diawali huruf <code class="text-goldLight bg-cardDark px-1.5 py-0.5 rounded">AIzaSy...</code>.</li>
+        <li>Tempel kode tersebut ke kolom <strong>Google Gemini API Key</strong> di aplikasi ini dan klik <strong>Simpan Key</strong>.</li>
+      </ol>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="toggleGuideModal()" class="px-5 py-2.5 rounded-xl gold-gradient-bg text-xs font-bold">
+          Mengerti, Tutup Panduan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // =========================================================================
+    // STATE APLIKASI
+    // =========================================================================
+    const state = {
+      activeTab: 'pod', // 'pod' | 'microstock'
+      podRatio: '1:1',
+      microstockRatio: '16:9',
+      currentImageBase64: null,
+      currentMimeType: 'image/png',
+      currentFinalPrompt: '',
+      history: []
+    };
+
+    // =========================================================================
+    // INISIALISASI SAAT HALAMAN DIMUAT
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('gemini_pod_studio_api_key');
+      if (savedKey) {
+        document.getElementById('apiKeyInput').value = savedKey;
+        updateApiStatusBadge(true);
+      }
+    });
+
+    // =========================================================================
+    // MANAJEMEN API KEY & NOTIFIKASI TOAST
+    // =========================================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const styles = {
+        success: 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200',
+        error: 'bg-red-950/95 border-red-500/50 text-red-200',
+        info: 'bg-cardDark/95 border-goldPrimary/50 text-goldLight'
+      };
+
+      const icons = {
+        success: 'fa-circle-check text-emerald-400',
+        error: 'fa-circle-exclamation text-red-400',
+        info: 'fa-sparkles text-goldPrimary'
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md text-xs font-medium transition-all duration-300 transform translate-y-2 opacity-0 ${styles[type] || styles.info}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icons[type] || icons.info} text-sm shrink-0"></i>
+        <span class="flex-1">${message}</span>
+      `;
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function saveApiKey() {
+      const input = document.getElementById('apiKeyInput').value.trim();
+      if (!input) {
+        localStorage.removeItem('gemini_pod_studio_api_key');
+        updateApiStatusBadge(false);
+        showToast('API Key dihapus dari penyimpanan browser.', 'info');
+        return;
+      }
+      localStorage.setItem('gemini_pod_studio_api_key', input);
+      updateApiStatusBadge(true);
+      showToast('API Key berhasil disimpan di browser Anda!', 'success');
+    }
+
+    function updateApiStatusBadge(isSaved) {
+      const badge = document.getElementById('apiStatusBadge');
+      if (isSaved) {
+        badge.textContent = 'Tersimpan';
+        badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+      } else {
+        badge.textContent = 'Belum Diisi';
+        badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20';
+      }
+    }
+
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('apiKeyInput');
+      const icon = document.getElementById('eyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash text-xs';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye text-xs';
+      }
+    }
+
+    function toggleGuideModal() {
+      const modal = document.getElementById('guideModal');
+      modal.classList.toggle('hidden');
+    }
+
+    // =========================================================================
+    // NAVIGASI TAB & PENGATURAN RASIO
+    // =========================================================================
+    function switchTab(tab) {
+      state.activeTab = tab;
+      const btnPod = document.getElementById('tabBtnPod');
+      const btnMicro = document.getElementById('tabBtnMicrostock');
+      const panelPod = document.getElementById('panelPod');
+      const panelMicro = document.getElementById('panelMicrostock');
+
+      if (tab === 'pod') {
+        btnPod.className = 'py-3 px-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 gold-gradient-bg shadow-md';
+        btnMicro.className = 'py-3 px-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center justify-center gap-2';
+        panelPod.classList.remove('hidden');
+        panelMicro.classList.add('hidden');
+        document.getElementById('activeRatioTag').textContent = state.podRatio;
+      } else {
+        btnMicro.className = 'py-3 px-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 gold-gradient-bg shadow-md';
+        btnPod.className = 'py-3 px-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center justify-center gap-2';
+        panelMicro.classList.remove('hidden');
+        panelPod.classList.add('hidden');
+        document.getElementById('activeRatioTag').textContent = state.microstockRatio;
+      }
+    }
+
+    function selectRatio(mode, ratio, btnElement) {
+      if (mode === 'pod') {
+        state.podRatio = ratio;
+      } else {
+        state.microstockRatio = ratio;
+      }
+      document.getElementById('activeRatioTag').textContent = ratio;
+
+      const group = btnElement.parentElement;
+      group.querySelectorAll('.ratio-btn').forEach(btn => {
+        btn.className = 'ratio-btn py-2.5 px-3 rounded-xl border border-borderDark bg-obsidian text-gray-400 hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition';
+      });
+      btnElement.className = 'ratio-btn active-ratio py-2.5 px-3 rounded-xl border border-goldPrimary bg-goldPrimary/15 text-goldLight text-xs font-semibold flex items-center justify-center gap-2 transition';
+    }
+
+    // =========================================================================
+    // PENYEMPURNAAN PROMPT & CONTOH IDE
+    // =========================================================================
+    function insertSamplePrompt() {
+      const promptInput = document.getElementById('promptInput');
+      if (state.activeTab === 'pod') {
+        const samples = [
+          'Kucing samurai Jepang memegang pedang katana dengan gaya retro wave matahari terbenam',
+          'Tengkorak mekanik cyberpunk dikelilingi bunga mawar neon dan petir',
+          'Anjing corgi lucu memakai kacamata hitam mengendarai skateboard'
+        ];
+        promptInput.value = samples[Math.floor(Math.random() * samples.length)];
+      } else {
+        const samples = [
+          'Ruang kerja minimalis modern dengan laptop, secangkir kopi hangat, dan cahaya matahari pagi yang lembut',
+          'Pola berulang daun tropis monstera dan bunga emas mewah di atas latar hijau zamrud gelap',
+          'Ikon 3D roket meluncur ke atas melambangkan pertumbuhan bisnis startup teknologi'
+        ];
+        promptInput.value = samples[Math.floor(Math.random() * samples.length)];
+      }
+      showToast('Contoh ide dimasukkan! Klik Sempurnakan Prompt atau langsung Generate.', 'info');
+    }
+
+    function enhancePromptRuleBased(mode) {
+      const promptInput = document.getElementById('promptInput');
+      let current = promptInput.value.trim();
+
+      if (!current) {
+        showToast('Tulis ide dasar Anda terlebih dahulu sebelum menyempurnakan prompt.', 'error');
+        promptInput.focus();
+        return;
+      }
+
+      if (mode === 'pod') {
+        const style = document.getElementById('podStyle').value;
+        const bg = document.getElementById('podBackground').value;
+        const suffix = `${style}, ${bg}, vector art, flat colors, clean sharp edges, centered composition, t-shirt graphic design, high contrast, no mockup, no frame, print-ready artwork`;
+        if (!current.toLowerCase().includes('no mockup')) {
+          promptInput.value = `${current} — ${suffix}`;
+        }
+        showToast('Kata kunci profesional POD berhasil ditambahkan!', 'success');
+      } else {
+        const category = document.getElementById('microstockCategory').value;
+        const suffix = `${category}, high resolution, commercial stock quality, clean composition, sharp focus, studio lighting, professional aesthetic, ultra detailed, no watermark, no text artifacts`;
+        if (!current.toLowerCase().includes('commercial stock quality')) {
+          promptInput.value = `${current} — ${suffix}`;
+        }
+        showToast('Kata kunci standar komersial Microstock berhasil ditambahkan!', 'success');
+      }
+    }
+
+    // =========================================================================
+    // INTEGRASI GOOGLE GEMINI API (EXPONENTIAL BACKOFF)
+    // =========================================================================
+    async function fetchWithRetry(url, options, retries = 3) {
+      let delay = 1000;
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(url, options);
+          if (response.ok) {
+            return await response.json();
+          }
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData?.error?.message || `HTTP Error ${response.status}`;
+          
+          // Jika error 400/401/403 (API key salah/tidak valid), jangan retry
+          if (response.status === 400 || response.status === 401 || response.status === 403) {
+            throw new Error(errMsg);
+          }
+          if (i === retries - 1) throw new Error(errMsg);
+        } catch (err) {
+          if (i === retries - 1) throw err;
+        }
+        await new Promise(res => setTimeout(res, delay));
+        delay *= 2;
+      }
+    }
+
+    // =========================================================================
+    // PROSES GENERATE GAMBAR UTAMA
+    // =========================================================================
+    async function handleGenerate() {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      if (!apiKey) {
+        showToast('Harap masukkan Google Gemini API Key terlebih dahulu!', 'error');
+        document.getElementById('apiKeyInput').focus();
+        return;
+      }
+
+      const rawPrompt = document.getElementById('promptInput').value.trim();
+      if (!rawPrompt) {
+        showToast('Silakan tulis deskripsi ide gambar Anda terlebih dahulu.', 'error');
+        document.getElementById('promptInput').focus();
+        return;
+      }
+
+      const autoTranslate = document.getElementById('autoTranslateCheck').checked;
+      const mode = state.activeTab;
+      const ratio = mode === 'pod' ? state.podRatio : state.microstockRatio;
+
+      // Kunci tombol & tampilkan loading
+      setLoadingUI(true, 'Menyiapkan Prompt Terbaik...', 'Mengoptimalkan deskripsi Anda agar sesuai standar komersial.');
+
+      try {
+        let finalPrompt = rawPrompt;
+
+        // Konteks parameter pilihan user
+        const contextSpec = mode === 'pod'
+          ? `Style: ${document.getElementById('podStyle').value}. Background: ${document.getElementById('podBackground').value}. Must be isolated, centered, clean vector/illustration edges, suitable for Print on Demand merchandise, NO t-shirt mockup, NO human wearing it.`
+          : `Category: ${document.getElementById('microstockCategory').value}. Must meet top-tier commercial microstock standards (Shutterstock/Adobe Stock), crisp details, balanced composition, clean lighting.`;
+
+        // Langkah 1: Optimasi & Terjemahan ke Bahasa Inggris dengan Gemini Text
+        if (autoTranslate) {
+          const optimizerInstruction = `You are an expert prompt engineer for commercial Print-on-Demand and Microstock AI art. Translate the user's idea into vivid, descriptive English and merge it seamlessly with these technical requirements: ${contextSpec}. Return ONLY the final English image generation prompt without quotes, markdown, or extra explanation.`;
+
+          const textUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const textPayload = {
+            contents: [{ parts: [{ text: `User idea: ${rawPrompt}` }] }],
+            systemInstruction: { parts: [{ text: optimizerInstruction }] }
+          };
+
+          const textResult = await fetchWithRetry(textUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(textPayload)
+          });
+
+          const optimized = textResult?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (optimized) {
+            finalPrompt = optimized;
+          }
+        } else {
+          finalPrompt = `${rawPrompt}, ${contextSpec}`;
+        }
+
+        state.currentFinalPrompt = finalPrompt;
+
+        // Langkah 2: Generate Gambar dengan Gemini Image Generation Model
+        setLoadingUI(true, 'Melukis Karya AI Resolusi Tinggi...', `Merender rasio ${ratio} dengan detail tajam...`);
+
+        const imageUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const imagePayload = {
+          contents: [{
+            role: 'user',
+            parts: [{ text: finalPrompt }]
+          }],
+          generationConfig: {
+            responseModalities: ['IMAGE'],
+            imageConfig: {
+              aspectRatio: ratio
+            }
+          }
+        };
+
+        const imgResult = await fetchWithRetry(imageUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(imagePayload)
+        });
+
+        const imagePart = imgResult?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+
+        if (!imagePart || !imagePart.inlineData?.data) {
+          throw new Error('Model tidak mengembalikan data gambar. Coba ubah deskripsi prompt Anda.');
+        }
+
+        const base64Data = imagePart.inlineData.data;
+        const mimeType = imagePart.inlineData.mimeType || 'image/png';
+        const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+        state.currentImageBase64 = base64Data;
+        state.currentMimeType = mimeType;
+
+        // Tampilkan Gambar di UI
+        displayGeneratedImage(dataUrl, finalPrompt, mode, ratio);
+        showToast('Gambar berhasil dibuat! Menyusun metadata SEO...', 'success');
+
+        // Langkah 3: Otomatis Generate Metadata SEO (Judul & Keywords)
+        await generateSeoMetadata();
+
+      } catch (error) {
+        console.error('Generation Error:', error);
+        showToast(`Gagal membuat gambar: ${error.message}`, 'error');
+        setLoadingUI(false);
+      }
+    }
+
+    function setLoadingUI(isLoading, title = '', desc = '') {
+      const btn = document.getElementById('generateBtn');
+      const emptyState = document.getElementById('emptyState');
+      const loadingState = document.getElementById('loadingState');
+      const resultImage = document.getElementById('resultImage');
+
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Sedang Memproses...</span>`;
+
+        emptyState.classList.add('hidden');
+        resultImage.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+        document.getElementById('loadingStepTitle').textContent = title;
+        document.getElementById('loadingStepDesc').textContent = desc;
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Generate Gambar Sekarang</span>`;
+        loadingState.classList.add('hidden');
+
+        if (!state.currentImageBase64) {
+          emptyState.classList.remove('hidden');
+        }
+      }
+    }
+
+    function displayGeneratedImage(dataUrl, finalPrompt, mode, ratio) {
+      setLoadingUI(false);
+      const resultImage = document.getElementById('resultImage');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const finalPromptBox = document.getElementById('finalPromptBox');
+      const finalPromptText = document.getElementById('finalPromptText');
+      const regenSeoBtn = document.getElementById('regenSeoBtn');
+
+      resultImage.src = dataUrl;
+      resultImage.classList.remove('hidden');
+      downloadBtn.disabled = false;
+      regenSeoBtn.disabled = false;
+
+      finalPromptText.textContent = finalPrompt;
+      finalPromptBox.classList.remove('hidden');
+
+      // Tambahkan ke riwayat sesi
+      addToHistory({
+        id: Date.now(),
+        dataUrl,
+        prompt: finalPrompt,
+        mode,
+        ratio
+      });
+    }
+
+    // =========================================================================
+    // GENERATOR AUTO-METADATA SEO (JUDUL & 28 KEYWORDS)
+    // =========================================================================
+    async function generateSeoMetadata() {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      if (!apiKey || !state.currentFinalPrompt) return;
+
+      const seoEmptyHint = document.getElementById('seoEmptyHint');
+      const seoLoading = document.getElementById('seoLoading');
+      const seoContent = document.getElementById('seoContent');
+
+      seoEmptyHint.classList.add('hidden');
+      seoContent.classList.add('hidden');
+      seoLoading.classList.remove('hidden');
+
+      try {
+        const seoUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const seoPrompt = `Based on this commercial artwork description: "${state.currentFinalPrompt}", generate:
+1. A catchy, high-converting commercial English title (max 70 characters) suitable for Shutterstock, Adobe Stock, Freepik, and Redbubble.
+2. Exactly 28 relevant, high-search-volume single-word or two-word commercial English keywords/tags ordered by relevance.`;
+
+        const payload = {
+          contents: [{ parts: [{ text: seoPrompt }] }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'OBJECT',
+              properties: {
+                title: { type: 'STRING' },
+                keywords: {
+                  type: 'ARRAY',
+                  items: { type: 'STRING' }
+                }
+              },
+              required: ['title', 'keywords']
+            }
+          }
+        };
+
+        const result = await fetchWithRetry(seoUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawJson) throw new Error('Gagal memproses JSON SEO');
+
+        const parsed = JSON.parse(rawJson);
+        const cleanKeywords = (parsed.keywords || []).map(k => k.trim().toLowerCase()).filter(Boolean);
+
+        document.getElementById('seoTitleText').textContent = parsed.title || 'Commercial Digital Artwork';
+        document.getElementById('seoKeywordsText').textContent = cleanKeywords.join(', ');
+        document.getElementById('keywordCount').textContent = cleanKeywords.length;
+
+        seoLoading.classList.add('hidden');
+        seoContent.classList.remove('hidden');
+      } catch (err) {
+        console.error('SEO Metadata Error:', err);
+        seoLoading.classList.add('hidden');
+        seoEmptyHint.classList.remove('hidden');
+        seoEmptyHint.textContent = 'Gagal membuat metadata SEO otomatis. Klik "Buat Ulang SEO" untuk mencoba lagi.';
+      }
+    }
+
+    // =========================================================================
+    // DOWNLOAD PNG, COPY CLIPBOARD & GALERI RIWAYAT
+    // =========================================================================
+    function downloadCurrentImage() {
+      const img = document.getElementById('resultImage');
+      if (!img.src || img.classList.contains('hidden')) return;
+
+      const link = document.createElement('a');
+      const prefix = state.activeTab === 'pod' ? 'POD-Design' : 'Microstock-Asset';
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      link.download = `${prefix}-${timestamp}.png`;
+      link.href = img.src;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast('File PNG berhasil diunduh ke laptop Anda!', 'success');
+    }
+
+    function copyText(elementId, successMsg) {
+      const text = document.getElementById(elementId)?.textContent;
+      if (!text) return;
+
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        document.execCommand('copy');
+        showToast(successMsg, 'success');
+      } catch (err) {
+        showToast('Gagal menyalin teks. Silakan blok dan salin manual.', 'error');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function addToHistory(item) {
+      state.history.unshift(item);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const grid = document.getElementById('historyGrid');
+      const countLabel = document.getElementById('historyCount');
+      countLabel.textContent = `${state.history.length} Gambar`;
+
+      if (state.history.length === 0) return;
+
+      grid.innerHTML = state.history.map((item, idx) => `
+        <div onclick="loadFromHistory(${idx})" class="group relative aspect-square rounded-xl overflow-hidden bg-obsidian border border-borderDark hover:border-goldPrimary cursor-pointer transition">
+          <img src="${item.dataUrl}" alt="Riwayat ${idx + 1}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-2 flex items-center justify-between">
+            <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-goldPrimary/20 text-goldLight border border-goldPrimary/30">
+              ${item.mode}
+            </span>
+            <span class="text-[10px] text-gray-300">${item.ratio}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadFromHistory(index) {
+      const item = state.history[index];
+      if (!item) return;
+
+      const resultImage = document.getElementById('resultImage');
+      resultImage.src = item.dataUrl;
+      resultImage.classList.remove('hidden');
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('downloadBtn').disabled = false;
+      document.getElementById('regenSeoBtn').disabled = false;
+      document.getElementById('activeRatioTag').textContent = item.ratio;
+
+      state.currentFinalPrompt = item.prompt;
+      document.getElementById('finalPromptText').textContent = item.prompt;
+      document.getElementById('finalPromptBox').classList.remove('hidden');
+
+      showToast('Gambar dari riwayat ditampilkan kembali.', 'info');
+    }
+  </script>
+</body>
+</html>
